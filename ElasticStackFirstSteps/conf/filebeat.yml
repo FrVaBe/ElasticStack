@@ -1,0 +1,50 @@
+######################## Filebeat Configuration ############################
+
+# This file is a full configuration example documenting all non-deprecated
+# options in comments. For a shorter configuration example, that contains only
+# the most common options, please see filebeat.yml in the same directory.
+#
+# You can find the full configuration reference here:
+# https://www.elastic.co/guide/en/beats/filebeat/index.html
+
+#==========================  Modules configuration ============================
+
+filebeat.modules:
+
+#=========================== Filebeat prospectors =============================
+
+filebeat.prospectors:
+
+- input_type: log
+  paths:
+    - C:\Progs\FooBarBackend\logs\FooBarBackend*.log
+  # log4j2 pattern: %date{ISO8601}{UTC}Z | %5.5level | %15.15thread | %25.25logger{1.} | %30.30class{1.}(%4.4line) |&gt; %message | MDC=%MDC%n
+  # consider lines that do not start with the date pattern to belong to the previous line
+  multiline.pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
+  multiline.negate: true
+  multiline.match: after
+  # custom fields that will be used for conditional filtering in logstash
+  fields:
+    component: FooBarBackend
+
+- input_type: log
+  paths:
+    - C:\Progs\\FooBarFrontend\logs\FooBarFrontend.log*
+  # log4j pattern: %d{dd.MM.yy,HH:mm:ss,SSS} %-5p [%20.20t] %30.30c{1.} - %m%n 
+  # consider lines that do not start with the date pattern to belong to the previous line
+  multiline.pattern: '^[0-9]{2}\.[0-9]{2}\.[0-9]{2}'
+  multiline.negate: true
+  multiline.match: after
+  # custom fields that will be used for conditional filtering in logstash
+  fields:
+    component: FooBarFrontend
+
+#================================ Outputs ======================================
+
+output.logstash:
+  hosts: ["localhost:5044"]
+
+#================================ Logging ======================================
+
+logging.to_files: true
+logging.files:
