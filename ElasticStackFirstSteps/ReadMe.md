@@ -4,18 +4,19 @@
 
 * [Preface](#preface)
 * [Elastic Stack Documentation](#elastic-stack-documentation)
-* [Start / Installation]()
+* [Start / Installation](#start--installation)
 * [Configuration](#configuration)
   * [Elasticsearch](#elasticsearch)
   * [Filebeat](#filebeat)
   * [Logstash](#logstash)
   * [Kibana](#kibana)
+* [Known Issues](#known-issues)
 
 
 
 ## Preface
 
-This document is about my first steps with the _Elastic Stack_ which I attend to use for the management of logging data. The most important reason for this document is the documentation of the setup work I did and not the introduction to the Elastic Stack.
+This document is about my first steps with the [_Open Source Elastic Stack_](https://www.elastic.co/de/products) which I attend to use for the management of logging data. The most important reason for this document is the documentation of the setup work I did and not the introduction to the Elastic Stack.
 
 Thus to understand this document you should know about the basic concepts of the Elastic Stack and its components. You can find a lot of information on these topics in the links I provided below.
 
@@ -112,7 +113,7 @@ output.logstash:
 
 ### Logstash
 
-A logstash _pipeline_ contains of _inputs_, _filters_ (optional) and _outputs_. The pipeline components are realized by [plugins](https://www.elastic.co/guide/en/logstash/current/working-with-plugins.html). Numerous plugins offer a rich feature selection for different use cases
+A logstash _pipeline_ includes _inputs, _filter_ (optional) and _output_ components. These pipeline components are realized by [plugins](https://www.elastic.co/guide/en/logstash/current/working-with-plugins.html). Numerous plugins offer a rich feature selection for different use cases
 
 ```
             |------------ Logstash pipeline  -----------|
@@ -170,7 +171,8 @@ filter {
 
 The filter section should handle _Backend_ and _Frontend_ events different. Therefore a [condition](https://www.elastic.co/guide/en/logstash/current/event-dependent-configuration.html#conditionals) on the _component_ name (which was attached as a custom field in the Beats framework) is used. 
 
-To split the log line to individual fields (key/value pairs) the [grok](https://www.elastic.co/guide/en/logstash/current/plugins-filters-grok.html) filter plugin with the [match](https://www.elastic.co/guide/en/logstash/current/plugins-filters-grok.html#plugins-filters-grok-match) configuration option is used. In doing so a [regular expression](https://www.elastic.co/guide/en/logstash/current/plugins-filters-grok.html#_regular_expressions) syntax is used to parse the data and to generate a structured output. A variety of predefined [patterns](https://github.com/logstash-plugins/logstash-patterns-core/blob/master/patterns/grok-patterns) is available for this task.
+ A [regular expression](https://www.elastic.co/guide/en/logstash/current/plugins-filters-grok.html#_regular_expressions) syntax is used in conjuction with the [match](https://www.elastic.co/guide/en/logstash/current/plugins-filters-grok.html#plugins-filters-grok-match) configuration option of the [grok](https://www.elastic.co/guide/en/logstash/current/plugins-filters-grok.html) filter plugin to split the log line into structured data (key/value pairs). 
+ A variety of predefined [patterns](https://github.com/logstash-plugins/logstash-patterns-core/blob/master/patterns/grok-patterns) is available for this task.
 
 ```
 >    grok {
@@ -180,13 +182,13 @@ To split the log line to individual fields (key/value pairs) the [grok](https://
 >    }
 ```
 
-The `FRONTEND_DATETIME` pattern which is used to parse the datetime of a fontend log entry is no standard pattern. But [custom patterns](https://www.elastic.co/guide/en/logstash/current/plugins-filters-grok.html#_custom_patterns) can easily be added by providing a custom text file with these patterns that is located in the `logstash/patterns` application directory. I did this with the [patterns/custom](patterns/custom) file which contents looks like this
+The `FRONTEND_DATETIME` pattern which is used to parse the datetime of a fontend log entry is no standard pattern. But [custom patterns](https://www.elastic.co/guide/en/logstash/current/plugins-filters-grok.html#_custom_patterns) can easily be added by providing a custom text file with these patterns which needs to be located in the `logstash/patterns` application directory. I did this with the [patterns/custom](conf/patterns/custom) file. The contents looks like this
 
 ```
 > FRONTEND_DATETIME %{MONTHDAY}\.%{MONTHNUM}\.%{YEAR},%{HOUR}:?%{MINUTE}(?::?%{SECOND})
 ```
 
-The grok filter achieves that the event data has structured fields information about _timestamp_, _Thread_, _logging level_, _class_ and _message_ after the filter process. This data will be relevant for the later output to Elasticsearch. 
+The given grok filter above achieves that the event data has structured fields information about _timestamp_, _thread_, _logging level_, _class_ and _message_ after the filter process. This data will be relevant for the later output to Elasticsearch. 
 
 Finding the right pattern that matches a log can be hard. The online [Grok Debugger](http://grokdebug.herokuapp.com/) is a great help on doing so.
 
@@ -251,3 +253,7 @@ Because of the setup I can now declare the following index patterns in Kibana
 |foobar-frontend-*     | the frontend application         |
 
 Discovering of log entries for both or individual applications works great ;-)
+
+## Known-Issues
+
+* multiline log entries are grouped together to one log event but the extracted `msg` content contains only the message of the first line (the rest ist hidden in the `source` attribute of the logging data which is sent to Elasticsearch)
