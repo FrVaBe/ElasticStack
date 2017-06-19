@@ -269,3 +269,9 @@ Discovering of log entries for both or individual applications works great ;-)
     * consider to use log file names which can be used as template for the Elasticsearch index; the log file name is part of the _source_ log event data an can propably be used to generate a automatic index name
       * index name must be all lowercase ([see here](https://www.elastic.co/guide/en/elasticsearch/reference/5.4/_basic_concepts.html#_index))
   * ...
+
+  * License
+    * see [Subscriptions](https://www.elastic.co/subscriptions)
+    * using the Monitoring feature of X-Pack requires a free license which needs to be renewed every year
+
+    
