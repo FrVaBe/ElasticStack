@@ -11,6 +11,7 @@
   * [Logstash](#logstash)
   * [Kibana](#kibana)
 * [Known Issues](#known-issues)
+* [Lessons Learned](#lessons-learned)
 
 
 
@@ -113,7 +114,7 @@ output.logstash:
 
 ### Logstash
 
-A logstash _pipeline_ includes _inputs, _filter_ (optional) and _output_ components. These pipeline components are realized by [plugins](https://www.elastic.co/guide/en/logstash/current/working-with-plugins.html). Numerous plugins offer a rich feature selection for different use cases
+A Logstash _pipeline_ includes _inputs_, _filter_ (optional) and _output_ components. These pipeline components are realized by [plugins](https://www.elastic.co/guide/en/logstash/current/working-with-plugins.html). Numerous plugins offer a rich feature selection for different use cases
 
 ```
             |------------ Logstash pipeline  -----------|
@@ -192,7 +193,7 @@ The given grok filter above achieves that the event data has structured fields i
 
 Finding the right pattern that matches a log can be hard. The online [Grok Debugger](http://grokdebug.herokuapp.com/) is a great help on doing so.
 
-Beside that my filter also adds a [@metada](https://www.elastic.co/guide/en/logstash/5.4/event-dependent-configuration.html#metadata) information to a logging event, which will not be part of the later output. It is just used internally. In my setup I added  the _index_ name that should be used for the Elasticsearch output of the events as a metadata information (by using the [add_field](https://www.elastic.co/guide/en/logstash/current/plugins-filters-grok.html#plugins-filters-grok-add_field) option). _Backend_ and _Frontend_ logging data should be stored in different indexes in Elasticsearch to make them accessible independently.
+Beside handling the given log data my filter also adds a [@metada](https://www.elastic.co/guide/en/logstash/5.4/event-dependent-configuration.html#metadata) information to a logging event. This will only be used internally and not be part of a later output. In my setup I added  the _index_ name that should be used for the Elasticsearch output of the events by using the [add_field](https://www.elastic.co/guide/en/logstash/current/plugins-filters-grok.html#plugins-filters-grok-add_field) option. _Backend_ and _Frontend_ logging data should be stored in different indices in Elasticsearch to make them accessible independently.
 
 ```
 >     add_field => { "[@metadata][index]" => "foobar-backend" }
@@ -207,7 +208,10 @@ Last but not least I had to transfer the _logtimestamp_ data of the _Frontend_ e
 >    }
 ```
 
-To complete the logstash pipeling the [elasticsearch output plugin](https://www.elastic.co/guide/en/logstash/current/plugins-outputs-elasticsearch.html) is used.  
+It is important to have the correct date type here otherwise the values can not be used as a time-field later on (when working with the data in Elasticsearch / Kibana).
+
+
+To complete the Logstash pipeline the [elasticsearch output plugin](https://www.elastic.co/guide/en/logstash/current/plugins-outputs-elasticsearch.html) is used.  
 
 ```
 		output {
@@ -234,7 +238,7 @@ The logging data of the two different applications will be stored with different
 
 **Configuration file: [kibana.yml](conf/kibana.yml)**
 
-I also used the default setup of Kibana. I only changed the `server.host` value from _localhost_ to _0.0.0.0_ to allow remote connections.
+I used the default setup of Kibana. I only changed the `server.host` value from _localhost_ to _0.0.0.0_ to allow remote connections.
 
 ```yml
 # Specifies the address to which the Kibana server will bind. IP addresses and host names are both valid values.
@@ -257,3 +261,11 @@ Discovering of log entries for both or individual applications works great ;-)
 ## Known-Issues
 
 * multiline log entries are grouped together to one log event but the extracted `msg` content contains only the message of the first line (the rest ist hidden in the `source` attribute of the logging data which is sent to Elasticsearch)
+
+## Lessons Learned
+
+  * treating each logging source (application) individually is hard and error-prone
+    * consider to use a common logging framework wit a common Pattern Layout for each application of a system
+    * consider to use log file names which can be used as template for the Elasticsearch index; the log file name is part of the _source_ log event data an can propably be used to generate a automatic index name
+      * index name must be all lowercase ([see here](https://www.elastic.co/guide/en/elasticsearch/reference/5.4/_basic_concepts.html#_index))
+  * ...
