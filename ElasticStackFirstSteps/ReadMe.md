@@ -265,7 +265,7 @@ Discovering of log entries for both or individual applications works great ;-)
 ## Lessons Learned
 
   * treating each logging source (application) individually is hard and error-prone
-    * consider to use a common logging framework wit a common Pattern Layout for each application of a system
+    * consider to use a common logging framework with a common Pattern Layout for each application of a system
     * consider to use log file names which can be used as template for the Elasticsearch index; the log file name is part of the _source_ log event data an can propably be used to generate a automatic index name
       * index name must be all lowercase ([see here](https://www.elastic.co/guide/en/elasticsearch/reference/5.4/_basic_concepts.html#_index))
   * ...
