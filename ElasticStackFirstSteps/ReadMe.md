@@ -250,7 +250,7 @@ server.host: "0.0.0.0"
 
 Because of the setup I can now declare the following index patterns in Kibana
 
-|Kibana Index Patterna | affects logs of                  |
+|Kibana Index Pattern  | affects logs of                  |
 |----------------------|----------------------------------|
 |foobar-*              | backend and frontend application |
 |foobar-backend-*      | the backend application          |
